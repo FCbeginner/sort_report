@@ -2,212 +2,72 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>氣泡排序示範</title>
+    <title>演算法示範首頁</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            padding: 20px; 
+        body {
+            font-family: Arial, sans-serif;
             background-color: #f5f5f5;
             color: #333;
-        }
-        .control-panel {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .control-group {
-            margin-bottom: 15px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 15px;
-        }
-        label { font-weight: bold; }
-        input[type="range"] { width: 200px; }
-        input[type="number"] { width: 80px; padding: 5px; }
-        .array-container { 
-            display: flex; 
-            margin-top: 20px;
-            align-items: flex-end;
             justify-content: center;
-            min-height: 250px;
+            min-height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 40px;
+        }
+        .card-container {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .card {
             background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .bar { 
-            width: 30px; 
-            margin-right: 2px; 
-            background-color: #333; 
-            color: white; 
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            padding: 32px 40px;
             text-align: center;
-            font-size: 12px;
-            border-radius: 2px;
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-width: 200px;
         }
-        .bar.active { background-color: #666; }
-        .bar.swapped { background-color: #888; }
-        button { 
-            padding: 10px 20px; 
-            font-size: 16px;
-            background-color: #333;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
         }
-        button:hover { background-color: #555; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-        #log { 
-            margin-top: 20px; 
-            white-space: pre-wrap; 
-            background-color: #f0f0f0; 
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #333;
-            max-height: 200px;
-            overflow-y: auto;
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
         }
-        .info { color: #666; font-size: 14px; }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .card-desc {
+            font-size: 0.9rem;
+            color: #888;
+        }
     </style>
 </head>
 <body>
-    <h1>氣泡排序法 (Bubble Sort) 視覺化示範</h1>
-    <p class="info">調整參數後按下「開始排序」，觀察排序過程。</p>
-
-    <div class="control-panel">
-        <div class="control-group">
-            <label for="arraySize">資料數量：</label>
-            <input type="number" id="arraySize" min="5" max="50" value="10">
-            <span class="info">(5-50個)</span>
-        </div>
-        <div class="control-group">
-            <label for="speed">排序速度：</label>
-            <input type="range" id="speed" min="50" max="800" value="400" step="50">
-            <span id="speedDisplay">中速</span>
-        </div>
-        <div class="control-group">
-            <button id="start">開始排序</button>
-            <button id="stop" disabled>停止排序</button>
-            <button id="reset">重設</button>
-        </div>
+    <h1>演算法示範首頁</h1>
+    <p>選擇下方的演算法查看視覺化示範</p>
+    <div class="card-container">
+        <a class="card" href="bubble_sort.html">
+            <div class="card-icon">🫧</div>
+            <div class="card-title">氣泡排序法</div>
+            <div class="card-desc">Bubble Sort 視覺化示範</div>
+        </a>
     </div>
-
-    <div class="array-container" id="array"></div>
-    <div id="log"></div>
-
-    <script>
-        let isSorting = false;
-        let shouldStop = false;
-        let currentArr = [];
-
-        // 產生一個隨機整數陣列
-        function generateArray(size) {
-            const arr = [];
-            const maxValue = Math.max(100, size * 10);
-            for (let i = 0; i < size; i++) {
-                arr.push(Math.floor(Math.random() * maxValue) + 1);
-            }
-            return arr;
-        }
-
-        function renderArray(arr, activeIndices = [], swappedIndices = []) {
-            const container = document.getElementById('array');
-            container.innerHTML = '';
-            const maxValue = Math.max(...arr);
-            arr.forEach((value, idx) => {
-                const bar = document.createElement('div');
-                bar.classList.add('bar');
-                bar.style.height = (value / maxValue) * 200 + 'px';
-                bar.textContent = value;
-                if (activeIndices.includes(idx)) bar.classList.add('active');
-                if (swappedIndices.includes(idx)) bar.classList.add('swapped');
-                container.appendChild(bar);
-            });
-        }
-
-        async function bubbleSort(arr, delay) {
-            const n = arr.length;
-            const logEl = document.getElementById('log');
-            logEl.textContent = '';
-
-            for (let i = 0; i < n - 1; i++) {
-                if (shouldStop) {
-                    logEl.textContent += '\n⊗ 排序已停止';
-                    break;
-                }
-                for (let j = 0; j < n - 1 - i; j++) {
-                    if (shouldStop) break;
-                    renderArray(arr, [j, j + 1]);
-                    logEl.textContent += `比較 arr[${j}] = ${arr[j]} 和 arr[${j+1}] = ${arr[j+1]}\n`;
-                    await sleep(delay);
-                    if (arr[j] > arr[j + 1]) {
-                        logEl.textContent += `交換 ${arr[j]} 和 ${arr[j+1]}\n`;
-                        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-                        renderArray(arr, [], [j, j + 1]);
-                        await sleep(delay);
-                    }
-                }
-                if (!shouldStop) {
-                    logEl.textContent += `第 ${i+1} 輪結束\n\n`;
-                }
-            }
-            if (!shouldStop) {
-                renderArray(arr);
-                logEl.textContent += '✓ 排序完成！';
-            }
-            isSorting = false;
-            shouldStop = false;
-            updateButtonStates();
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        function updateButtonStates() {
-            document.getElementById('start').disabled = isSorting;
-            document.getElementById('stop').disabled = !isSorting;
-        }
-
-        // 更新速度顯示
-        document.getElementById('speed').addEventListener('change', (e) => {
-            const speed = parseInt(e.target.value);
-            let label = '';
-            if (speed <= 250) label = '快速';
-            else if (speed <= 500) label = '中速';
-            else label = '慢速';
-            document.getElementById('speedDisplay').textContent = label;
-        });
-
-        document.getElementById('start').addEventListener('click', () => {
-            if (isSorting) return;
-            isSorting = true;
-            shouldStop = false;
-            updateButtonStates();
-
-            const size = parseInt(document.getElementById('arraySize').value) || 10;
-            const speed = parseInt(document.getElementById('speed').value);
-            currentArr = generateArray(size);
-            renderArray(currentArr);
-            bubbleSort(currentArr, 850 - speed);
-        });
-
-        document.getElementById('stop').addEventListener('click', () => {
-            shouldStop = true;
-        });
-
-        document.getElementById('reset').addEventListener('click', () => {
-            shouldStop = true;
-            isSorting = false;
-            updateButtonStates();
-            document.getElementById('log').textContent = '';
-            const size = parseInt(document.getElementById('arraySize').value) || 10;
-            currentArr = generateArray(size);
-            renderArray(currentArr);
-        });
-    </script>
 </body>
 </html>

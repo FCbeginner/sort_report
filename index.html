@@ -2,82 +2,127 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>演算法示範首頁</title>
+    <title>演算法示範</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 24px 16px 36px;
             background-color: #f5f5f5;
             color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
+        }
+        .page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+        .hero-panel {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 28px 20px;
+            text-align: center;
+            margin-bottom: 20px;
         }
         h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
+            font-size: 2.1rem;
+            margin: 0 0 10px;
+            letter-spacing: 0.3px;
         }
-        p {
+        .subtitle {
             color: #666;
-            margin-bottom: 40px;
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.6;
         }
         .card-container {
             display: flex;
-            gap: 24px;
+            gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
         }
         .card {
             background-color: white;
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-            padding: 32px 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            padding: 28px 24px;
             text-align: center;
             text-decoration: none;
             color: #333;
-            transition: transform 0.2s, box-shadow 0.2s;
-            min-width: 200px;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            min-width: 220px;
+            max-width: 300px;
+            flex: 1 1 240px;
         }
         .card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.15);
+            border-color: #c7d2fe;
         }
         .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 12px;
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%);
+            border: 1px solid #c7d2fe;
         }
         .card-title {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: bold;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         .card-desc {
-            font-size: 0.9rem;
-            color: #888;
+            font-size: 0.92rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 10px 24px;
+            }
+            .hero-panel {
+                padding: 22px 14px;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            .card {
+                min-width: 100%;
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>演算法示範首頁</h1>
-    <p>選擇下方的演算法查看視覺化示範</p>
-    <div class="card-container">
-        <a class="card" href="bubble_sort.html">
-            <div class="card-icon">🫧</div>
-            <div class="card-title">氣泡排序法</div>
-            <div class="card-desc">Bubble Sort 視覺化示範</div>
-        </a>
-        <a class="card" href="selection_sort.html">
-            <div class="card-icon">🎯</div>
-            <div class="card-title">選擇排序法</div>
-            <div class="card-desc">Selection Sort 視覺化示範</div>
-        </a>
-        <a class="card" href="insertion_sort.html">
-            <div class="card-icon">📥</div>
-            <div class="card-title">插入排序法</div>
-            <div class="card-desc">Insertion Sort 視覺化示範</div>
-        </a>
+    <div class="page-container">
+        <section class="hero-panel">
+            <h1>演算法示範</h1>
+            <p class="subtitle">選擇下方的演算法進入操作練習，觀察排序流程、顏色變化與 C++ 參考程式。</p>
+        </section>
+
+        <div class="card-container">
+            <a class="card" href="bubble_sort.html">
+                <div class="card-icon">🫧</div>
+                <div class="card-title">氣泡排序法</div>
+                <div class="card-desc">Bubble Sort 操作練習</div>
+            </a>
+            <a class="card" href="selection_sort.html">
+                <div class="card-icon">🎯</div>
+                <div class="card-title">選擇排序法</div>
+                <div class="card-desc">Selection Sort 操作練習</div>
+            </a>
+            <a class="card" href="insertion_sort.html">
+                <div class="card-icon">📥</div>
+                <div class="card-title">插入排序法</div>
+                <div class="card-desc">Insertion Sort 操作練習</div>
+            </a>
+        </div>
     </div>
 </body>
 </html>

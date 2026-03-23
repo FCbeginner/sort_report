@@ -2,13 +2,23 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>氣泡排序示範</title>
+    <title>氣泡排序法</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            padding: 20px; 
+            margin: 0;
+            padding: 24px 16px 36px;
             background-color: #f5f5f5;
             color: #333;
+        }
+        .page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+        h1,
+        .info-title {
+            text-align: center;
         }
         .control-panel {
             background-color: white;
@@ -21,6 +31,7 @@
             margin-bottom: 15px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 15px;
             flex-wrap: wrap;
         }
@@ -41,14 +52,16 @@
         .bar { 
             width: 30px; 
             margin-right: 2px; 
-            background-color: #333; 
+            background-color: #475569;
             color: white; 
             text-align: center;
             font-size: 12px;
             border-radius: 2px;
+            transition: background-color 0.2s;
         }
-        .bar.active { background-color: #666; }
-        .bar.swapped { background-color: #888; }
+        .bar.comparing { background-color: #f59e0b; }
+        .bar.swapped { background-color: #ef4444; }
+        .bar.sorted { background-color: #22c55e; }
         button { 
             padding: 10px 20px; 
             font-size: 16px;
@@ -83,14 +96,125 @@
             border-left: 4px solid #333;
             max-height: 200px;
             overflow-y: auto;
+            line-height: 1.5;
         }
         .info { color: #666; font-size: 14px; }
+        .legend {
+            margin-top: 14px;
+            padding: 10px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid #e2e8f0;
+        }
+        .legend-item {
+            margin: 4px 0;
+            display: inline-block;
+            margin-right: 16px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .code-panel {
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .code-panel h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        .code-panel p {
+            margin-top: 0;
+            color: #555;
+            text-align: center;
+        }
+        .code-panel ul {
+            margin: 10px 0 16px;
+            padding-left: 22px;
+            color: #444;
+            line-height: 1.6;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 0;
+            background-color: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+        }
+        .code-lang {
+            font-size: 13px;
+            font-weight: bold;
+            color: #3730a3;
+            letter-spacing: 0.4px;
+        }
+        .code-block {
+            background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%);
+            color: #1f2937;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid #c7d2fe;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+            padding: 14px 16px;
+            max-height: 230px;
+            overflow: auto;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        .code-block code {
+            font-family: Consolas, 'Courier New', monospace;
+        }
+        .code-block::-webkit-scrollbar,
+        #log::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        .code-block::-webkit-scrollbar-thumb,
+        #log::-webkit-scrollbar-thumb {
+            background-color: #a5b4fc;
+            border-radius: 10px;
+        }
+        .code-block::-webkit-scrollbar-track,
+        #log::-webkit-scrollbar-track {
+            background-color: rgba(165, 180, 252, 0.2);
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 10px 24px;
+            }
+            .control-panel,
+            .array-container,
+            #log,
+            .code-panel {
+                padding: 14px;
+            }
+            .bar {
+                width: 22px;
+                font-size: 11px;
+            }
+            .code-block {
+                max-height: 190px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="page-container">
     <a class="btn-home" href="index.html">← 回首頁</a>
-    <h1>氣泡排序法 (Bubble Sort) 視覺化示範</h1>
-    <p class="info">調整參數後按下「開始排序」，可選擇自動播放或分解模式逐步學習。</p>
+    <h1>氣泡排序法 Bubble Sort</h1>
+    <p class="info info-title">調整參數後按下「開始排序」，可選擇自動播放或分解模式逐步學習。</p>
 
     <div class="control-panel">
         <div class="control-group">
@@ -115,10 +239,66 @@
                 分解模式（手動一步一步）
             </label>
         </div>
+        <div class="legend">
+            <div class="legend-item"><span class="legend-color" style="background-color: #475569;"></span>未排序</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #f59e0b;"></span>比較中</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #ef4444;"></span>交換中</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #22c55e;"></span>已排序</div>
+        </div>
     </div>
 
     <div class="array-container" id="array"></div>
     <div id="log"></div>
+
+    <section class="code-panel">
+        <h2>C++ 氣泡排序法參考程式</h2>
+        <p>下面這段程式碼示範如何用 C++ 實作氣泡排序，和上方動畫的「比較相鄰兩個元素並交換」概念相同。</p>
+        <ul>
+            <li>外圈迴圈控制總共要做幾輪比較。</li>
+            <li>內圈迴圈每次比較相鄰元素，若順序錯誤就交換。</li>
+            <li><code>swapped</code> 可提早結束：若某一輪沒有交換，代表已排序完成。</li>
+        </ul>
+        <div class="code-header">
+            <span class="code-lang">C++</span>
+        </div>
+        <pre class="code-block"><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+void bubbleSort(vector&lt;int&gt;&amp; arr) {
+    int n = static_cast&lt;int&gt;(arr.size());
+
+    for (int i = 0; i &lt; n - 1; ++i) {
+        bool swapped = false;
+
+        for (int j = 0; j &lt; n - 1 - i; ++j) {
+            if (arr[j] &gt; arr[j + 1]) {
+                swap(arr[j], arr[j + 1]);
+                swapped = true;
+            }
+        }
+
+        if (!swapped) {
+            break;
+        }
+    }
+}
+
+int main() {
+    vector&lt;int&gt; data = {5, 1, 4, 2, 8};
+
+    bubbleSort(data);
+
+    cout &lt;&lt; "排序結果: ";
+    for (int x : data) {
+        cout &lt;&lt; x &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+    </section>
+    </div>
 
     <script>
         let isSorting = false;
@@ -138,7 +318,7 @@
             return arr;
         }
 
-        function renderArray(arr, activeIndices = [], swappedIndices = []) {
+        function renderArray(arr, comparingIndices = [], swappedIndices = [], sortedIndices = []) {
             const container = document.getElementById('array');
             container.innerHTML = '';
             const maxValue = Math.max(...arr);
@@ -147,7 +327,8 @@
                 bar.classList.add('bar');
                 bar.style.height = (value / maxValue) * 200 + 'px';
                 bar.textContent = value;
-                if (activeIndices.includes(idx)) bar.classList.add('active');
+                if (sortedIndices.includes(idx)) bar.classList.add('sorted');
+                if (comparingIndices.includes(idx)) bar.classList.add('comparing');
                 if (swappedIndices.includes(idx)) bar.classList.add('swapped');
                 container.appendChild(bar);
             });
@@ -163,24 +344,29 @@
                     logEl.textContent += '\n⊗ 排序已停止';
                     break;
                 }
+
+                const sortedIndices = Array.from({ length: i }, (_, idx) => n - 1 - idx);
                 for (let j = 0; j < n - 1 - i; j++) {
                     if (shouldStop) break;
-                    renderArray(arr, [j, j + 1]);
+                    renderArray(arr, [j, j + 1], [], sortedIndices);
                     logEl.textContent += `比較 arr[${j}] = ${arr[j]} 和 arr[${j+1}] = ${arr[j+1]}\n`;
                     await sleep(delay);
                     if (arr[j] > arr[j + 1]) {
                         logEl.textContent += `交換 ${arr[j]} 和 ${arr[j+1]}\n`;
                         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-                        renderArray(arr, [], [j, j + 1]);
+                        renderArray(arr, [], [j, j + 1], sortedIndices);
                         await sleep(delay);
                     }
                 }
                 if (!shouldStop) {
+                    const sortedNow = [...sortedIndices, n - 1 - i];
+                    renderArray(arr, [], [], sortedNow);
                     logEl.textContent += `第 ${i+1} 輪結束\n\n`;
                 }
             }
             if (!shouldStop) {
-                renderArray(arr);
+                const allSorted = Array.from({ length: n }, (_, idx) => idx);
+                renderArray(arr, [], [], allSorted);
                 logEl.textContent += '✓ 排序完成！';
             }
             isSorting = false;
@@ -195,17 +381,20 @@
 
             steps.push({
                 arr: [...arr],
-                active: [],
+                comparing: [],
                 swapped: [],
+                sorted: [],
                 message: '開始分解模式：按「下一步」逐步執行。'
             });
 
             for (let i = 0; i < n - 1; i++) {
+                const sortedIndices = Array.from({ length: i }, (_, idx) => n - 1 - idx);
                 for (let j = 0; j < n - 1 - i; j++) {
                     steps.push({
                         arr: [...arr],
-                        active: [j, j + 1],
+                        comparing: [j, j + 1],
                         swapped: [],
+                        sorted: sortedIndices,
                         message: `比較 arr[${j}] = ${arr[j]} 和 arr[${j + 1}] = ${arr[j + 1]}`
                     });
 
@@ -215,8 +404,9 @@
                         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
                         steps.push({
                             arr: [...arr],
-                            active: [],
+                            comparing: [],
                             swapped: [j, j + 1],
+                            sorted: sortedIndices,
                             message: `交換 ${left} 和 ${right}`
                         });
                     }
@@ -224,16 +414,18 @@
 
                 steps.push({
                     arr: [...arr],
-                    active: [],
+                    comparing: [],
                     swapped: [],
+                    sorted: [...sortedIndices, n - 1 - i],
                     message: `第 ${i + 1} 輪結束`
                 });
             }
 
             steps.push({
                 arr: [...arr],
-                active: [],
+                comparing: [],
                 swapped: [],
+                sorted: Array.from({ length: n }, (_, idx) => idx),
                 message: '✓ 排序完成！'
             });
 
@@ -248,7 +440,7 @@
             }
 
             const step = bubbleSteps[currentStepIndex];
-            renderArray(step.arr, step.active, step.swapped);
+            renderArray(step.arr, step.comparing, step.swapped, step.sorted);
             logEl.textContent += `${step.message}\n`;
             currentStepIndex++;
 

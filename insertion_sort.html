@@ -2,13 +2,23 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>插入排序示範</title>
+    <title>插入排序法</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            padding: 20px; 
+            margin: 0;
+            padding: 24px 16px 36px;
             background-color: #f5f5f5;
             color: #333;
+        }
+        .page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+        h1,
+        .info-title {
+            text-align: center;
         }
         .control-panel {
             background-color: white;
@@ -21,6 +31,7 @@
             margin-bottom: 15px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 15px;
             flex-wrap: wrap;
         }
@@ -41,7 +52,7 @@
         .bar { 
             width: 30px; 
             margin-right: 2px; 
-            background-color: #333; 
+            background-color: #475569;
             color: white; 
             text-align: center;
             font-size: 12px;
@@ -87,34 +98,125 @@
             max-height: 200px;
             overflow-y: auto;
             font-size: 13px;
+            line-height: 1.5;
         }
         .info { color: #666; font-size: 14px; }
         .legend {
-            margin-top: 15px;
+            margin-top: 14px;
             padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
+            background-color: #f8fafc;
+            border-radius: 6px;
             font-size: 13px;
+            border: 1px solid #e2e8f0;
         }
         .legend-item {
             margin: 4px 0;
             display: inline-block;
-            margin-right: 20px;
+            margin-right: 16px;
         }
         .legend-color {
             display: inline-block;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 2px;
             margin-right: 6px;
             vertical-align: middle;
         }
+        .code-panel {
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .code-panel h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        .code-panel p {
+            margin-top: 0;
+            color: #555;
+            text-align: center;
+        }
+        .code-panel ul {
+            margin: 10px 0 16px;
+            padding-left: 22px;
+            color: #444;
+            line-height: 1.6;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 0;
+            background-color: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+        }
+        .code-lang {
+            font-size: 13px;
+            font-weight: bold;
+            color: #3730a3;
+            letter-spacing: 0.4px;
+        }
+        .code-block {
+            background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%);
+            color: #1f2937;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid #c7d2fe;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+            padding: 14px 16px;
+            max-height: 230px;
+            overflow: auto;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        .code-block code {
+            font-family: Consolas, 'Courier New', monospace;
+        }
+        .code-block::-webkit-scrollbar,
+        #log::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        .code-block::-webkit-scrollbar-thumb,
+        #log::-webkit-scrollbar-thumb {
+            background-color: #a5b4fc;
+            border-radius: 10px;
+        }
+        .code-block::-webkit-scrollbar-track,
+        #log::-webkit-scrollbar-track {
+            background-color: rgba(165, 180, 252, 0.2);
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 10px 24px;
+            }
+            .control-panel,
+            .array-container,
+            #log,
+            .code-panel {
+                padding: 14px;
+            }
+            .bar {
+                width: 22px;
+                font-size: 11px;
+            }
+            .code-block {
+                max-height: 190px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="page-container">
     <a class="btn-home" href="index.html">← 回首頁</a>
-    <h1>插入排序法 (Insertion Sort) 視覺化示範</h1>
-    <p class="info">調整參數後按下「開始排序」，可選擇自動播放或分解模式逐步學習。</p>
+    <h1>插入排序法 Insertion Sort</h1>
+    <p class="info info-title">調整參數後按下「開始排序」，可選擇自動播放或分解模式逐步學習。</p>
 
     <div class="control-panel">
         <div class="control-group">
@@ -140,7 +242,7 @@
             </label>
         </div>
         <div class="legend">
-            <div class="legend-item"><span class="legend-color" style="background-color: #333;"></span>未排序</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #475569;"></span>未排序</div>
             <div class="legend-item"><span class="legend-color" style="background-color: #4CAF50;"></span>已排序</div>
             <div class="legend-item"><span class="legend-color" style="background-color: #FF9800;"></span>當前元素</div>
             <div class="legend-item"><span class="legend-color" style="background-color: #f44336;"></span>比較中</div>
@@ -150,6 +252,53 @@
 
     <div class="array-container" id="array"></div>
     <div id="log"></div>
+
+    <section class="code-panel">
+        <h2>C++ 插入排序法參考程式</h2>
+        <p>Insertion Sort 會把每個新元素插入左側已排序區段，直到整個陣列完成排序。</p>
+        <ul>
+            <li>將目前元素存為 <code>key</code>，並向左比較。</li>
+            <li>比 <code>key</code> 大的元素會往右移動一格。</li>
+            <li>最後把 <code>key</code> 放入正確插入位置。</li>
+        </ul>
+        <div class="code-header">
+            <span class="code-lang">C++</span>
+        </div>
+        <pre class="code-block"><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+void insertionSort(vector&lt;int&gt;&amp; arr) {
+    int n = static_cast&lt;int&gt;(arr.size());
+
+    for (int i = 1; i &lt; n; ++i) {
+        int key = arr[i];
+        int j = i - 1;
+
+        while (j &gt;= 0 &amp;&amp; arr[j] &gt; key) {
+            arr[j + 1] = arr[j];
+            --j;
+        }
+
+        arr[j + 1] = key;
+    }
+}
+
+int main() {
+    vector&lt;int&gt; data = {12, 11, 13, 5, 6};
+
+    insertionSort(data);
+
+    cout &lt;&lt; "排序結果: ";
+    for (int x : data) {
+        cout &lt;&lt; x &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+    </section>
+    </div>
 
     <script>
         let isSorting = false;

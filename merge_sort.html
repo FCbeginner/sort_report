@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>合併排序法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 24px 16px 36px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+        h1,
+        .info-title {
+            text-align: center;
+        }
+        .control-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .control-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        label { font-weight: bold; }
+        input[type="range"] { width: 200px; }
+        input[type="number"] { width: 80px; padding: 5px; }
+        .array-container {
+            display: flex;
+            margin-top: 20px;
+            align-items: flex-end;
+            justify-content: center;
+            min-height: 250px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .bar {
+            width: 30px;
+            margin-right: 2px;
+            background-color: #475569;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+            border-radius: 2px;
+            transition: background-color 0.2s;
+        }
+        .bar.left-part { background-color: #3b82f6; }
+        .bar.right-part { background-color: #f97316; }
+        .bar.comparing { background-color: #f59e0b; }
+        .bar.merged { background-color: #22c55e; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #555; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-home {
+            display: inline-block;
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 16px;
+            transition: background-color 0.2s;
+        }
+        .btn-home:hover { background-color: #eee; }
+        #log {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #333;
+            max-height: 200px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        .info { color: #666; font-size: 14px; }
+        .legend {
+            margin-top: 14px;
+            padding: 10px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid #e2e8f0;
+        }
+        .legend-item {
+            margin: 4px 0;
+            display: inline-block;
+            margin-right: 16px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .code-panel {
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .code-panel h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        .code-panel p {
+            margin-top: 0;
+            color: #555;
+            text-align: center;
+        }
+        .code-panel ul {
+            margin: 10px 0 16px;
+            padding-left: 22px;
+            color: #444;
+            line-height: 1.6;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 0;
+            background-color: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+        }
+        .code-lang {
+            font-size: 13px;
+            font-weight: bold;
+            color: #3730a3;
+            letter-spacing: 0.4px;
+        }
+        .code-block {
+            background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%);
+            color: #1f2937;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid #c7d2fe;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+            padding: 14px 16px;
+            max-height: 230px;
+            overflow: auto;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        .code-block code {
+            font-family: Consolas, 'Courier New', monospace;
+        }
+        .code-block::-webkit-scrollbar,
+        #log::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        .code-block::-webkit-scrollbar-thumb,
+        #log::-webkit-scrollbar-thumb {
+            background-color: #a5b4fc;
+            border-radius: 10px;
+        }
+        .code-block::-webkit-scrollbar-track,
+        #log::-webkit-scrollbar-track {
+            background-color: rgba(165, 180, 252, 0.2);
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 10px 24px;
+            }
+            .control-panel,
+            .array-container,
+            #log,
+            .code-panel {
+                padding: 14px;
+            }
+            .bar {
+                width: 22px;
+                font-size: 11px;
+            }
+            .code-block {
+                max-height: 190px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <a class="btn-home" href="index.html">← 回首頁</a>
+        <h1>合併排序法 Merge Sort</h1>
+        <p class="info info-title">觀察「分割陣列」與「合併有序子陣列」的流程，理解分治法如何提升效率。</p>
+
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="arraySize">資料數量：</label>
+                <input type="number" id="arraySize" min="4" max="36" value="12">
+                <span class="info">(4-36個)</span>
+            </div>
+            <div class="control-group">
+                <label for="speed">播放速度：</label>
+                <input type="range" id="speed" min="50" max="800" value="400" step="50">
+                <span id="speedDisplay">中速</span>
+            </div>
+            <div class="control-group">
+                <button id="start">開始排序</button>
+                <button id="stop" disabled>停止排序</button>
+                <button id="nextStep" disabled>下一步</button>
+                <button id="reset">重設</button>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="stepMode">
+                    分解模式（手動一步一步）
+                </label>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><span class="legend-color" style="background-color: #475569;"></span>未處理</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #3b82f6;"></span>左半部</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #f97316;"></span>右半部</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #f59e0b;"></span>比較中</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #22c55e;"></span>已合併</div>
+            </div>
+        </div>
+
+        <div class="array-container" id="array"></div>
+        <div id="log"></div>
+
+        <section class="code-panel">
+            <h2>C++ 合併排序法參考程式</h2>
+            <p>合併排序使用分治法：先把陣列切小，再把排序好的子陣列合併回去。</p>
+            <ul>
+                <li>遞迴把區間切成左右兩半，直到只剩一個元素。</li>
+                <li>合併時同時比較左右子陣列前端元素，把較小者放回原陣列。</li>
+                <li>時間複雜度約為 O(n log n)，在大量資料時通常比 O(n²) 排序更有效率。</li>
+            </ul>
+            <div class="code-header">
+                <span class="code-lang">C++</span>
+            </div>
+            <pre class="code-block"><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+void merge(vector&lt;int&gt;&amp; arr, int left, int mid, int right) {
+    vector&lt;int&gt; leftPart(arr.begin() + left, arr.begin() + mid + 1);
+    vector&lt;int&gt; rightPart(arr.begin() + mid + 1, arr.begin() + right + 1);
+
+    int i = 0, j = 0, k = left;
+
+    while (i &lt; static_cast&lt;int&gt;(leftPart.size()) &amp;&amp; j &lt; static_cast&lt;int&gt;(rightPart.size())) {
+        if (leftPart[i] &lt;= rightPart[j]) {
+            arr[k++] = leftPart[i++];
+        } else {
+            arr[k++] = rightPart[j++];
+        }
+    }
+
+    while (i &lt; static_cast&lt;int&gt;(leftPart.size())) {
+        arr[k++] = leftPart[i++];
+    }
+
+    while (j &lt; static_cast&lt;int&gt;(rightPart.size())) {
+        arr[k++] = rightPart[j++];
+    }
+}
+
+void mergeSort(vector&lt;int&gt;&amp; arr, int left, int right) {
+    if (left &gt;= right) {
+        return;
+    }
+
+    int mid = left + (right - left) / 2;
+    mergeSort(arr, left, mid);
+    mergeSort(arr, mid + 1, right);
+    merge(arr, left, mid, right);
+}
+
+int main() {
+    vector&lt;int&gt; data = {7, 2, 9, 1, 5, 3};
+
+    mergeSort(data, 0, static_cast&lt;int&gt;(data.size()) - 1);
+
+    cout &lt;&lt; "排序結果: ";
+    for (int x : data) {
+        cout &lt;&lt; x &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+        </section>
+    </div>
+
+    <script>
+        let isSorting = false;
+        let shouldStop = false;
+        let currentArr = [];
+        let stepModeActive = false;
+        let mergeSteps = [];
+        let currentStepIndex = 0;
+
+        function generateArray(size) {
+            const arr = [];
+            const maxValue = Math.max(90, size * 9);
+            for (let i = 0; i < size; i++) {
+                arr.push(Math.floor(Math.random() * maxValue) + 1);
+            }
+            return arr;
+        }
+
+        function buildRange(start, end) {
+            if (start > end) return [];
+            return Array.from({ length: end - start + 1 }, (_, idx) => start + idx);
+        }
+
+        function renderArray(arr, leftIndices = [], rightIndices = [], comparingIndices = [], mergedIndices = []) {
+            const container = document.getElementById('array');
+            container.innerHTML = '';
+            const maxValue = Math.max(...arr);
+
+            arr.forEach((value, idx) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = (value / maxValue) * 200 + 'px';
+                bar.textContent = value;
+
+                if (leftIndices.includes(idx)) bar.classList.add('left-part');
+                if (rightIndices.includes(idx)) bar.classList.add('right-part');
+                if (comparingIndices.includes(idx)) bar.classList.add('comparing');
+                if (mergedIndices.includes(idx)) bar.classList.add('merged');
+
+                container.appendChild(bar);
+            });
+        }
+
+        function buildMergeSortSteps(sourceArr) {
+            const arr = [...sourceArr];
+            const steps = [];
+
+            steps.push({
+                arr: [...arr],
+                leftIndices: [],
+                rightIndices: [],
+                comparing: [],
+                merged: [],
+                message: '開始分解模式：合併排序先切分，再把子陣列合併。'
+            });
+
+            function divideAndMerge(left, right) {
+                if (left >= right) {
+                    steps.push({
+                        arr: [...arr],
+                        leftIndices: [left],
+                        rightIndices: [],
+                        comparing: [],
+                        merged: [left],
+                        message: `子陣列 [${left}] 只有一個元素，視為已排序。`
+                    });
+                    return;
+                }
+
+                const mid = Math.floor((left + right) / 2);
+
+                steps.push({
+                    arr: [...arr],
+                    leftIndices: buildRange(left, mid),
+                    rightIndices: buildRange(mid + 1, right),
+                    comparing: [],
+                    merged: [],
+                    message: `切分區間 [${left}..${right}] -> 左 [${left}..${mid}]、右 [${mid + 1}..${right}]`
+                });
+
+                divideAndMerge(left, mid);
+                divideAndMerge(mid + 1, right);
+
+                const leftPart = arr.slice(left, mid + 1);
+                const rightPart = arr.slice(mid + 1, right + 1);
+                let i = 0;
+                let j = 0;
+                let k = left;
+                const mergedIndices = [];
+
+                steps.push({
+                    arr: [...arr],
+                    leftIndices: buildRange(left, mid),
+                    rightIndices: buildRange(mid + 1, right),
+                    comparing: [],
+                    merged: [...mergedIndices],
+                    message: `開始合併區間 [${left}..${mid}] 與 [${mid + 1}..${right}]`
+                });
+
+                while (i < leftPart.length && j < rightPart.length) {
+                    const leftIndex = left + i;
+                    const rightIndex = mid + 1 + j;
+                    const leftVal = leftPart[i];
+                    const rightVal = rightPart[j];
+
+                    steps.push({
+                        arr: [...arr],
+                        leftIndices: buildRange(left, mid),
+                        rightIndices: buildRange(mid + 1, right),
+                        comparing: [leftIndex, rightIndex],
+                        merged: [...mergedIndices],
+                        message: `比較左值 ${leftVal} 與右值 ${rightVal}`
+                    });
+
+                    if (leftVal <= rightVal) {
+                        arr[k] = leftVal;
+                        mergedIndices.push(k);
+                        steps.push({
+                            arr: [...arr],
+                            leftIndices: buildRange(left, mid),
+                            rightIndices: buildRange(mid + 1, right),
+                            comparing: [],
+                            merged: [...mergedIndices],
+                            message: `放入 ${leftVal} 到位置 ${k}`
+                        });
+                        i++;
+                    } else {
+                        arr[k] = rightVal;
+                        mergedIndices.push(k);
+                        steps.push({
+                            arr: [...arr],
+                            leftIndices: buildRange(left, mid),
+                            rightIndices: buildRange(mid + 1, right),
+                            comparing: [],
+                            merged: [...mergedIndices],
+                            message: `放入 ${rightVal} 到位置 ${k}`
+                        });
+                        j++;
+                    }
+                    k++;
+                }
+
+                while (i < leftPart.length) {
+                    arr[k] = leftPart[i];
+                    mergedIndices.push(k);
+                    steps.push({
+                        arr: [...arr],
+                        leftIndices: buildRange(left, mid),
+                        rightIndices: buildRange(mid + 1, right),
+                        comparing: [],
+                        merged: [...mergedIndices],
+                        message: `右半部已用完，補上左值 ${leftPart[i]} 到位置 ${k}`
+                    });
+                    i++;
+                    k++;
+                }
+
+                while (j < rightPart.length) {
+                    arr[k] = rightPart[j];
+                    mergedIndices.push(k);
+                    steps.push({
+                        arr: [...arr],
+                        leftIndices: buildRange(left, mid),
+                        rightIndices: buildRange(mid + 1, right),
+                        comparing: [],
+                        merged: [...mergedIndices],
+                        message: `左半部已用完，補上右值 ${rightPart[j]} 到位置 ${k}`
+                    });
+                    j++;
+                    k++;
+                }
+
+                steps.push({
+                    arr: [...arr],
+                    leftIndices: [],
+                    rightIndices: [],
+                    comparing: [],
+                    merged: buildRange(left, right),
+                    message: `區間 [${left}..${right}] 合併完成`
+                });
+            }
+
+            divideAndMerge(0, arr.length - 1);
+
+            steps.push({
+                arr: [...arr],
+                leftIndices: [],
+                rightIndices: [],
+                comparing: [],
+                merged: buildRange(0, arr.length - 1),
+                message: '✓ 排序完成！'
+            });
+
+            return steps;
+        }
+
+        async function playMergeSteps(delay) {
+            const logEl = document.getElementById('log');
+            while (currentStepIndex < mergeSteps.length) {
+                if (shouldStop) {
+                    logEl.textContent += '\n⊗ 排序已停止';
+                    break;
+                }
+
+                const step = mergeSteps[currentStepIndex];
+                renderArray(step.arr, step.leftIndices, step.rightIndices, step.comparing, step.merged);
+                logEl.textContent += `${step.message}\n`;
+                currentStepIndex++;
+                await sleep(delay);
+            }
+
+            isSorting = false;
+            shouldStop = false;
+            stepModeActive = false;
+            updateButtonStates();
+        }
+
+        function applyNextMergeStep() {
+            const logEl = document.getElementById('log');
+
+            if (currentStepIndex >= mergeSteps.length) {
+                return;
+            }
+
+            const step = mergeSteps[currentStepIndex];
+            renderArray(step.arr, step.leftIndices, step.rightIndices, step.comparing, step.merged);
+            logEl.textContent += `${step.message}\n`;
+            currentStepIndex++;
+
+            if (currentStepIndex >= mergeSteps.length) {
+                isSorting = false;
+                stepModeActive = false;
+                updateButtonStates();
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function updateButtonStates() {
+            document.getElementById('start').disabled = isSorting;
+            document.getElementById('stop').disabled = !isSorting;
+            document.getElementById('nextStep').disabled = !(isSorting && stepModeActive);
+        }
+
+        document.getElementById('speed').addEventListener('change', (e) => {
+            const speed = parseInt(e.target.value);
+            let label = '';
+            if (speed <= 250) label = '快速';
+            else if (speed <= 500) label = '中速';
+            else label = '慢速';
+            document.getElementById('speedDisplay').textContent = label;
+        });
+
+        document.getElementById('start').addEventListener('click', () => {
+            if (isSorting) return;
+
+            isSorting = true;
+            shouldStop = false;
+            stepModeActive = document.getElementById('stepMode').checked;
+            updateButtonStates();
+
+            const size = parseInt(document.getElementById('arraySize').value) || 12;
+            const speed = parseInt(document.getElementById('speed').value);
+
+            currentArr = generateArray(size);
+            mergeSteps = buildMergeSortSteps(currentArr);
+            currentStepIndex = 0;
+            document.getElementById('log').textContent = '';
+
+            if (stepModeActive) {
+                applyNextMergeStep();
+                updateButtonStates();
+                return;
+            }
+
+            playMergeSteps(850 - speed);
+        });
+
+        document.getElementById('stop').addEventListener('click', () => {
+            shouldStop = true;
+            isSorting = false;
+            stepModeActive = false;
+            updateButtonStates();
+        });
+
+        document.getElementById('nextStep').addEventListener('click', () => {
+            if (!isSorting || !stepModeActive) return;
+            applyNextMergeStep();
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            shouldStop = true;
+            isSorting = false;
+            stepModeActive = false;
+            mergeSteps = [];
+            currentStepIndex = 0;
+            updateButtonStates();
+            document.getElementById('log').textContent = '';
+
+            const size = parseInt(document.getElementById('arraySize').value) || 12;
+            currentArr = generateArray(size);
+            renderArray(currentArr);
+        });
+
+        window.addEventListener('load', () => {
+            const size = parseInt(document.getElementById('arraySize').value) || 12;
+            currentArr = generateArray(size);
+            renderArray(currentArr);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>快速排序法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 24px 16px 36px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+        h1,
+        .info-title {
+            text-align: center;
+        }
+        .control-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .control-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        label { font-weight: bold; }
+        input[type="range"] { width: 200px; }
+        input[type="number"] { width: 80px; padding: 5px; }
+        .array-container {
+            display: flex;
+            margin-top: 20px;
+            align-items: flex-end;
+            justify-content: center;
+            min-height: 250px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .bar {
+            width: 30px;
+            margin-right: 2px;
+            background-color: #475569;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+            border-radius: 2px;
+            transition: background-color 0.2s;
+        }
+        .bar.range { background-color: #64748b; }
+        .bar.comparing { background-color: #f59e0b; }
+        .bar.pivot { background-color: #8b5cf6; }
+        .bar.swapped { background-color: #ef4444; }
+        .bar.sorted { background-color: #22c55e; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #555; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-home {
+            display: inline-block;
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 16px;
+            transition: background-color 0.2s;
+        }
+        .btn-home:hover { background-color: #eee; }
+        #log {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #333;
+            max-height: 200px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        .info { color: #666; font-size: 14px; }
+        .legend {
+            margin-top: 14px;
+            padding: 10px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid #e2e8f0;
+        }
+        .legend-item {
+            margin: 4px 0;
+            display: inline-block;
+            margin-right: 16px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .code-panel {
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .code-panel h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        .code-panel p {
+            margin-top: 0;
+            color: #555;
+            text-align: center;
+        }
+        .code-panel ul {
+            margin: 10px 0 16px;
+            padding-left: 22px;
+            color: #444;
+            line-height: 1.6;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 0;
+            background-color: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+        }
+        .code-lang {
+            font-size: 13px;
+            font-weight: bold;
+            color: #3730a3;
+            letter-spacing: 0.4px;
+        }
+        .code-block {
+            background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%);
+            color: #1f2937;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid #c7d2fe;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+            padding: 14px 16px;
+            max-height: 230px;
+            overflow: auto;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        .code-block code {
+            font-family: Consolas, 'Courier New', monospace;
+        }
+        .code-block::-webkit-scrollbar,
+        #log::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        .code-block::-webkit-scrollbar-thumb,
+        #log::-webkit-scrollbar-thumb {
+            background-color: #a5b4fc;
+            border-radius: 10px;
+        }
+        .code-block::-webkit-scrollbar-track,
+        #log::-webkit-scrollbar-track {
+            background-color: rgba(165, 180, 252, 0.2);
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 10px 24px;
+            }
+            .control-panel,
+            .array-container,
+            #log,
+            .code-panel {
+                padding: 14px;
+            }
+            .bar {
+                width: 22px;
+                font-size: 11px;
+            }
+            .code-block {
+                max-height: 190px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <a class="btn-home" href="index.html">← 回首頁</a>
+        <h1>快速排序法 Quick Sort</h1>
+        <p class="info info-title">觀察 pivot 分區與遞迴流程，可使用自動播放或分解模式逐步學習。</p>
+
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="arraySize">資料數量：</label>
+                <input type="number" id="arraySize" min="5" max="50" value="12">
+                <span class="info">(5-50個)</span>
+            </div>
+            <div class="control-group">
+                <label for="speed">排序速度：</label>
+                <input type="range" id="speed" min="50" max="800" value="400" step="50">
+                <span id="speedDisplay">中速</span>
+            </div>
+            <div class="control-group">
+                <button id="start">開始排序</button>
+                <button id="stop" disabled>停止排序</button>
+                <button id="nextStep" disabled>下一步</button>
+                <button id="reset">重設</button>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="stepMode">
+                    分解模式（手動一步一步）
+                </label>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><span class="legend-color" style="background-color: #475569;"></span>未處理</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #64748b;"></span>目前分區</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #8b5cf6;"></span>Pivot</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #f59e0b;"></span>比較中</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #ef4444;"></span>交換中</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #22c55e;"></span>已定位</div>
+            </div>
+        </div>
+
+        <div class="array-container" id="array"></div>
+        <div id="log"></div>
+
+        <section class="code-panel">
+            <h2>C++ 快速排序法參考程式</h2>
+            <p>快速排序透過「選 pivot + 分區」反覆把資料切成更小範圍，再遞迴完成排序。</p>
+            <ul>
+                <li><code>partition</code> 會把小於等於 pivot 的元素放到左邊。</li>
+                <li>pivot 放到正確位置後，左右兩邊子陣列各自遞迴排序。</li>
+                <li>平均時間複雜度為 <code>O(n log n)</code>，最差情況是 <code>O(n^2)</code>。</li>
+            </ul>
+            <div class="code-header">
+                <span class="code-lang">C++</span>
+            </div>
+            <pre class="code-block"><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+int partition(vector&lt;int&gt;&amp; arr, int low, int high) {
+    int pivot = arr[high];
+    int i = low - 1;
+
+    for (int j = low; j &lt; high; ++j) {
+        if (arr[j] &lt;= pivot) {
+            ++i;
+            swap(arr[i], arr[j]);
+        }
+    }
+
+    swap(arr[i + 1], arr[high]);
+    return i + 1;
+}
+
+void quickSort(vector&lt;int&gt;&amp; arr, int low, int high) {
+    if (low &gt;= high) {
+        return;
+    }
+
+    int pi = partition(arr, low, high);
+    quickSort(arr, low, pi - 1);
+    quickSort(arr, pi + 1, high);
+}
+
+int main() {
+    vector&lt;int&gt; data = {8, 3, 1, 7, 0, 10, 2};
+
+    quickSort(data, 0, static_cast&lt;int&gt;(data.size()) - 1);
+
+    cout &lt;&lt; "排序結果: ";
+    for (int x : data) {
+        cout &lt;&lt; x &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+        </section>
+    </div>
+
+    <script>
+        let isSorting = false;
+        let shouldStop = false;
+        let stepModeActive = false;
+        let currentArr = [];
+        let quickSteps = [];
+        let currentStepIndex = 0;
+
+        function generateArray(size) {
+            const arr = [];
+            const maxValue = Math.max(100, size * 10);
+            for (let i = 0; i < size; i++) {
+                arr.push(Math.floor(Math.random() * maxValue) + 1);
+            }
+            return arr;
+        }
+
+        function getRangeIndices(left, right) {
+            if (left < 0 || right < left) {
+                return [];
+            }
+            return Array.from({ length: right - left + 1 }, (_, idx) => left + idx);
+        }
+
+        function renderArray(arr, state = {}) {
+            const container = document.getElementById('array');
+            container.innerHTML = '';
+
+            if (!arr.length) {
+                return;
+            }
+
+            const maxValue = Math.max(...arr);
+            const comparing = state.comparing || [];
+            const swapped = state.swapped || [];
+            const sorted = state.sorted || [];
+            const activeRange = state.activeRange || [];
+            const pivotIndex = Number.isInteger(state.pivotIndex) ? state.pivotIndex : -1;
+
+            arr.forEach((value, idx) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = (value / maxValue) * 200 + 'px';
+                bar.textContent = value;
+
+                if (activeRange.includes(idx)) bar.classList.add('range');
+                if (sorted.includes(idx)) bar.classList.add('sorted');
+                if (idx === pivotIndex) bar.classList.add('pivot');
+                if (comparing.includes(idx)) bar.classList.add('comparing');
+                if (swapped.includes(idx)) bar.classList.add('swapped');
+
+                container.appendChild(bar);
+            });
+        }
+
+        function appendLog(message) {
+            const logEl = document.getElementById('log');
+            logEl.textContent += message + '\n';
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        function updateButtonStates() {
+            document.getElementById('start').disabled = isSorting;
+            document.getElementById('stop').disabled = !isSorting;
+            document.getElementById('nextStep').disabled = !(isSorting && stepModeActive);
+        }
+
+        async function partition(arr, low, high, delay, sortedIndicesSet, depth) {
+            const pivot = arr[high];
+            let i = low - 1;
+            const activeRange = getRangeIndices(low, high);
+
+            appendLog(`${'  '.repeat(depth)}分區 [${low}, ${high}]，pivot = arr[${high}] = ${pivot}`);
+            renderArray(arr, {
+                activeRange,
+                pivotIndex: high,
+                sorted: Array.from(sortedIndicesSet)
+            });
+            await sleep(delay);
+
+            for (let j = low; j < high; j++) {
+                if (shouldStop) {
+                    return low;
+                }
+
+                renderArray(arr, {
+                    activeRange,
+                    pivotIndex: high,
+                    comparing: [j, high],
+                    sorted: Array.from(sortedIndicesSet)
+                });
+                appendLog(`${'  '.repeat(depth)}比較 arr[${j}] = ${arr[j]} 與 pivot = ${pivot}`);
+                await sleep(delay);
+
+                if (arr[j] <= pivot) {
+                    i++;
+                    const leftVal = arr[i];
+                    const rightVal = arr[j];
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+
+                    renderArray(arr, {
+                        activeRange,
+                        pivotIndex: high,
+                        swapped: [i, j],
+                        sorted: Array.from(sortedIndicesSet)
+                    });
+
+                    if (i === j) {
+                        appendLog(`${'  '.repeat(depth)}arr[${j}] <= pivot，元素留在左側區域`);
+                    } else {
+                        appendLog(`${'  '.repeat(depth)}交換 arr[${i}](${leftVal}) 與 arr[${j}](${rightVal})`);
+                    }
+                    await sleep(delay);
+                }
+            }
+
+            const leftVal = arr[i + 1];
+            const rightVal = arr[high];
+            [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+            const pivotIndex = i + 1;
+
+            renderArray(arr, {
+                activeRange,
+                swapped: [pivotIndex, high],
+                sorted: Array.from(sortedIndicesSet)
+            });
+            if (pivotIndex === high) {
+                appendLog(`${'  '.repeat(depth)}pivot 已在正確位置`);
+            } else {
+                appendLog(`${'  '.repeat(depth)}將 pivot 與 arr[${pivotIndex}](${leftVal}) 交換（pivot值 ${rightVal}）`);
+            }
+            await sleep(delay);
+
+            sortedIndicesSet.add(pivotIndex);
+            renderArray(arr, {
+                activeRange,
+                pivotIndex,
+                sorted: Array.from(sortedIndicesSet)
+            });
+            appendLog(`${'  '.repeat(depth)}pivot 固定於索引 ${pivotIndex}`);
+            await sleep(delay);
+
+            return pivotIndex;
+        }
+
+        async function quickSort(arr, low, high, delay, sortedIndicesSet, depth) {
+            if (shouldStop) {
+                return;
+            }
+
+            if (low > high) {
+                return;
+            }
+
+            if (low === high) {
+                sortedIndicesSet.add(low);
+                renderArray(arr, {
+                    sorted: Array.from(sortedIndicesSet),
+                    activeRange: [low]
+                });
+                appendLog(`${'  '.repeat(depth)}子陣列只剩一個元素 arr[${low}] = ${arr[low]}，直接定位完成`);
+                await sleep(delay);
+                return;
+            }
+
+            const pi = await partition(arr, low, high, delay, sortedIndicesSet, depth);
+            if (shouldStop) {
+                return;
+            }
+
+            await quickSort(arr, low, pi - 1, delay, sortedIndicesSet, depth + 1);
+            await quickSort(arr, pi + 1, high, delay, sortedIndicesSet, depth + 1);
+        }
+
+        async function startQuickSortAnimation(arr, delay) {
+            document.getElementById('log').textContent = '';
+            appendLog('開始快速排序（Lomuto 分區法）');
+
+            const sortedIndicesSet = new Set();
+            await quickSort(arr, 0, arr.length - 1, delay, sortedIndicesSet, 0);
+
+            if (!shouldStop) {
+                renderArray(arr, {
+                    sorted: Array.from({ length: arr.length }, (_, idx) => idx)
+                });
+                appendLog('✓ 排序完成！');
+            } else {
+                appendLog('⊗ 排序已停止');
+            }
+
+            isSorting = false;
+            shouldStop = false;
+            stepModeActive = false;
+            updateButtonStates();
+        }
+
+        function buildQuickSteps(sourceArr) {
+            const arr = [...sourceArr];
+            const steps = [];
+            const sortedIndicesSet = new Set();
+
+            function pushStep(message, state = {}) {
+                steps.push({
+                    arr: [...arr],
+                    message,
+                    comparing: state.comparing || [],
+                    swapped: state.swapped || [],
+                    pivotIndex: Number.isInteger(state.pivotIndex) ? state.pivotIndex : -1,
+                    activeRange: state.activeRange || [],
+                    sorted: state.sorted || Array.from(sortedIndicesSet)
+                });
+            }
+
+            function partitionStep(low, high, depth) {
+                const pivot = arr[high];
+                let i = low - 1;
+                const activeRange = getRangeIndices(low, high);
+
+                pushStep(`${'  '.repeat(depth)}分區 [${low}, ${high}]，pivot = arr[${high}] = ${pivot}`, {
+                    activeRange,
+                    pivotIndex: high
+                });
+
+                for (let j = low; j < high; j++) {
+                    pushStep(`${'  '.repeat(depth)}比較 arr[${j}] = ${arr[j]} 與 pivot = ${pivot}`, {
+                        activeRange,
+                        pivotIndex: high,
+                        comparing: [j, high]
+                    });
+
+                    if (arr[j] <= pivot) {
+                        i++;
+                        const leftVal = arr[i];
+                        const rightVal = arr[j];
+                        [arr[i], arr[j]] = [arr[j], arr[i]];
+
+                        if (i === j) {
+                            pushStep(`${'  '.repeat(depth)}arr[${j}] <= pivot，元素留在左側區域`, {
+                                activeRange,
+                                pivotIndex: high,
+                                swapped: [i, j]
+                            });
+                        } else {
+                            pushStep(`${'  '.repeat(depth)}交換 arr[${i}](${leftVal}) 與 arr[${j}](${rightVal})`, {
+                                activeRange,
+                                pivotIndex: high,
+                                swapped: [i, j]
+                            });
+                        }
+                    }
+                }
+
+                const leftVal = arr[i + 1];
+                const rightVal = arr[high];
+                [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+                const pivotIndex = i + 1;
+
+                if (pivotIndex === high) {
+                    pushStep(`${'  '.repeat(depth)}pivot 已在正確位置`, {
+                        activeRange,
+                        swapped: [pivotIndex, high]
+                    });
+                } else {
+                    pushStep(`${'  '.repeat(depth)}將 pivot 與 arr[${pivotIndex}](${leftVal}) 交換（pivot值 ${rightVal}）`, {
+                        activeRange,
+                        swapped: [pivotIndex, high]
+                    });
+                }
+
+                sortedIndicesSet.add(pivotIndex);
+                pushStep(`${'  '.repeat(depth)}pivot 固定於索引 ${pivotIndex}`, {
+                    activeRange,
+                    pivotIndex,
+                    sorted: Array.from(sortedIndicesSet)
+                });
+
+                return pivotIndex;
+            }
+
+            function quickSortStep(low, high, depth) {
+                if (low > high) {
+                    return;
+                }
+
+                if (low === high) {
+                    sortedIndicesSet.add(low);
+                    pushStep(`${'  '.repeat(depth)}子陣列只剩一個元素 arr[${low}] = ${arr[low]}，直接定位完成`, {
+                        activeRange: [low],
+                        sorted: Array.from(sortedIndicesSet)
+                    });
+                    return;
+                }
+
+                const pi = partitionStep(low, high, depth);
+                quickSortStep(low, pi - 1, depth + 1);
+                quickSortStep(pi + 1, high, depth + 1);
+            }
+
+            pushStep('開始分解模式：按「下一步」逐步執行。');
+            quickSortStep(0, arr.length - 1, 0);
+            pushStep('✓ 排序完成！', {
+                sorted: Array.from({ length: arr.length }, (_, idx) => idx)
+            });
+
+            return steps;
+        }
+
+        function applyNextQuickStep() {
+            const logEl = document.getElementById('log');
+
+            if (currentStepIndex >= quickSteps.length) {
+                return;
+            }
+
+            const step = quickSteps[currentStepIndex];
+            renderArray(step.arr, {
+                comparing: step.comparing,
+                swapped: step.swapped,
+                pivotIndex: step.pivotIndex,
+                activeRange: step.activeRange,
+                sorted: step.sorted
+            });
+            logEl.textContent += `${step.message}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+            currentStepIndex++;
+
+            if (currentStepIndex >= quickSteps.length) {
+                isSorting = false;
+                stepModeActive = false;
+                updateButtonStates();
+            }
+        }
+
+        document.getElementById('speed').addEventListener('change', (e) => {
+            const speed = parseInt(e.target.value, 10);
+            let label = '';
+            if (speed <= 250) label = '慢速';
+            else if (speed <= 500) label = '中速';
+            else label = '快速';
+            document.getElementById('speedDisplay').textContent = label;
+        });
+
+        document.getElementById('start').addEventListener('click', () => {
+            if (isSorting) return;
+
+            isSorting = true;
+            shouldStop = false;
+            stepModeActive = document.getElementById('stepMode').checked;
+            updateButtonStates();
+
+            const size = parseInt(document.getElementById('arraySize').value, 10) || 10;
+            const speed = parseInt(document.getElementById('speed').value, 10);
+            currentArr = generateArray(size);
+            renderArray(currentArr);
+
+            if (stepModeActive) {
+                quickSteps = buildQuickSteps(currentArr);
+                currentStepIndex = 0;
+                document.getElementById('log').textContent = '';
+                applyNextQuickStep();
+                updateButtonStates();
+                return;
+            }
+
+            startQuickSortAnimation(currentArr, 850 - speed);
+        });
+
+        document.getElementById('stop').addEventListener('click', () => {
+            shouldStop = true;
+            isSorting = false;
+            stepModeActive = false;
+            updateButtonStates();
+        });
+
+        document.getElementById('nextStep').addEventListener('click', () => {
+            if (!isSorting || !stepModeActive) return;
+            applyNextQuickStep();
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            shouldStop = true;
+            isSorting = false;
+            stepModeActive = false;
+            quickSteps = [];
+            currentStepIndex = 0;
+            updateButtonStates();
+
+            document.getElementById('log').textContent = '';
+            const size = parseInt(document.getElementById('arraySize').value, 10) || 10;
+            currentArr = generateArray(size);
+            renderArray(currentArr);
+        });
+
+        window.addEventListener('load', () => {
+            const size = parseInt(document.getElementById('arraySize').value, 10) || 10;
+            currentArr = generateArray(size);
+            renderArray(currentArr);
+        });
+    </script>
+</body>
+</html>

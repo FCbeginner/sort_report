@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>基數排序法</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 24px 16px 36px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .page-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+        h1,
+        .info-title {
+            text-align: center;
+        }
+        .control-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .control-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .digit-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+            height: 32px;
+            border-radius: 999px;
+            background-color: #e0f2fe;
+            color: #0c4a6e;
+            font-weight: bold;
+            border: 1px solid #bae6fd;
+            padding: 0 12px;
+        }
+        .bucket-status {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        label { font-weight: bold; }
+        input[type="range"] { width: 200px; }
+        input[type="number"] { width: 80px; padding: 5px; }
+        .array-container {
+            display: flex;
+            margin-top: 20px;
+            align-items: flex-end;
+            justify-content: center;
+            min-height: 250px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .bucket-panel {
+            margin-top: 18px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .bucket-title {
+            margin: 0 0 6px;
+            font-size: 18px;
+            text-align: center;
+            color: #0f172a;
+        }
+        .bucket-subtitle {
+            margin: 0 0 12px;
+            text-align: center;
+            color: #475569;
+            font-size: 13px;
+        }
+        .bucket-board {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .bucket-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+            min-height: 96px;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+        .bucket-card.active {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+            transform: translateY(-2px);
+        }
+        .bucket-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #1e293b;
+            font-weight: bold;
+        }
+        .bucket-count {
+            color: #0369a1;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .bucket-values {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .bucket-pill {
+            font-size: 12px;
+            line-height: 1;
+            padding: 4px 6px;
+            border-radius: 999px;
+            background-color: #dbeafe;
+            color: #1e3a8a;
+            border: 1px solid #bfdbfe;
+        }
+        .bucket-empty {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .bar {
+            width: 30px;
+            margin-right: 2px;
+            background-color: #475569;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+            border-radius: 2px;
+            transition: background-color 0.2s;
+        }
+        .bar.comparing { background-color: #f59e0b; }
+        .bar.bucket { background-color: #0ea5e9; }
+        .bar.rewrite { background-color: #ef4444; }
+        .bar.sorted { background-color: #22c55e; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #555; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-home {
+            display: inline-block;
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 16px;
+            transition: background-color 0.2s;
+        }
+        .btn-home:hover { background-color: #eee; }
+        #log {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #333;
+            max-height: 200px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        .info { color: #666; font-size: 14px; }
+        .legend {
+            margin-top: 14px;
+            padding: 10px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid #e2e8f0;
+        }
+        .legend-item {
+            margin: 4px 0;
+            display: inline-block;
+            margin-right: 16px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .code-panel {
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .code-panel h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        .code-panel p {
+            margin-top: 0;
+            color: #555;
+            text-align: center;
+        }
+        .code-panel ul {
+            margin: 10px 0 16px;
+            padding-left: 22px;
+            color: #444;
+            line-height: 1.6;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 0;
+            background-color: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+        }
+        .code-lang {
+            font-size: 13px;
+            font-weight: bold;
+            color: #3730a3;
+            letter-spacing: 0.4px;
+        }
+        .code-block {
+            background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%);
+            color: #1f2937;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid #c7d2fe;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+            padding: 14px 16px;
+            max-height: 230px;
+            overflow: auto;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        .code-block code {
+            font-family: Consolas, 'Courier New', monospace;
+        }
+        .code-block::-webkit-scrollbar,
+        #log::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        .code-block::-webkit-scrollbar-thumb,
+        #log::-webkit-scrollbar-thumb {
+            background-color: #a5b4fc;
+            border-radius: 10px;
+        }
+        .code-block::-webkit-scrollbar-track,
+        #log::-webkit-scrollbar-track {
+            background-color: rgba(165, 180, 252, 0.2);
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 10px 24px;
+            }
+            .control-panel,
+            .array-container,
+            .bucket-panel,
+            #log,
+            .code-panel {
+                padding: 14px;
+            }
+            .bucket-board {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .bar {
+                width: 22px;
+                font-size: 11px;
+            }
+            .code-block {
+                max-height: 190px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <a class="btn-home" href="index.html">← 回首頁</a>
+        <h1>基數排序法 Radix Sort</h1>
+        <p class="info info-title">從個位數開始，逐位做穩定排序，觀察每一位數如何影響最終排序結果。</p>
+
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="arraySize">資料數量：</label>
+                <input type="number" id="arraySize" min="5" max="50" value="12">
+                <span class="info">(5-50個)</span>
+            </div>
+            <div class="control-group">
+                <label for="speed">排序速度：</label>
+                <input type="range" id="speed" min="50" max="800" value="400" step="50">
+                <span id="speedDisplay">中速</span>
+            </div>
+            <div class="control-group">
+                <button id="start">開始排序</button>
+                <button id="stop" disabled>停止排序</button>
+                <button id="nextStep" disabled>下一步</button>
+                <button id="reset">重設</button>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="stepMode">
+                    分解模式（手動一步一步）
+                </label>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><span class="legend-color" style="background-color: #475569;"></span>未處理</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #f59e0b;"></span>取位數中</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #0ea5e9;"></span>分配到桶子</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #ef4444;"></span>回寫陣列</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: #22c55e;"></span>排序完成</div>
+            </div>
+        </div>
+
+        <div class="array-container" id="array"></div>
+        <div class="bucket-panel">
+            <h2 class="bucket-title">Bucket 分配</h2>
+            <p class="bucket-subtitle">每輪依照目前位數把資料放進 bucket[0] ~ bucket[9]，再依序回寫回陣列。</p>
+            <div class="bucket-status">
+                <span class="digit-badge" id="digitDisplay">目前位數：尚未開始</span>
+            </div>
+            <div class="bucket-board" id="bucketBoard"></div>
+        </div>
+        <div id="log"></div>
+
+        <section class="code-panel">
+            <h2>C++ 基數排序法參考程式</h2>
+            <p>這裡示範 LSD（Least Significant Digit）版本，從個位數開始一路排到最高位數。</p>
+            <ul>
+                <li>每一輪根據 <code>exp</code>（1、10、100...）抽出當前位數。</li>
+                <li>使用穩定的 counting sort 進行當前位數排序。</li>
+                <li>當所有位數都處理完，整個陣列就完成排序。</li>
+            </ul>
+            <div class="code-header">
+                <span class="code-lang">C++</span>
+            </div>
+            <pre class="code-block"><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+void countingSortByDigit(vector&lt;int&gt;&amp; arr, int exp) {
+    int n = static_cast&lt;int&gt;(arr.size());
+    vector&lt;int&gt; output(n);
+    int count[10] = {0};
+
+    for (int x : arr) {
+        int digit = (x / exp) % 10;
+        count[digit]++;
+    }
+
+    for (int i = 1; i &lt; 10; ++i) {
+        count[i] += count[i - 1];
+    }
+
+    for (int i = n - 1; i &gt;= 0; --i) {
+        int digit = (arr[i] / exp) % 10;
+        output[count[digit] - 1] = arr[i];
+        count[digit]--;
+    }
+
+    for (int i = 0; i &lt; n; ++i) {
+        arr[i] = output[i];
+    }
+}
+
+void radixSort(vector&lt;int&gt;&amp; arr) {
+    int maxVal = *max_element(arr.begin(), arr.end());
+
+    for (int exp = 1; maxVal / exp &gt; 0; exp *= 10) {
+        countingSortByDigit(arr, exp);
+    }
+}
+
+int main() {
+    vector&lt;int&gt; data = {170, 45, 75, 90, 802, 24, 2, 66};
+    radixSort(data);
+
+    cout &lt;&lt; "排序結果: ";
+    for (int x : data) {
+        cout &lt;&lt; x &lt;&lt; " ";
+    }
+    cout &lt;&lt; endl;
+
+    return 0;
+}</code></pre>
+        </section>
+    </div>
+
+    <script>
+        let isSorting = false;
+        let shouldStop = false;
+        let stepModeActive = false;
+        let currentArr = [];
+        let radixSteps = [];
+        let currentStepIndex = 0;
+
+        function generateArray(size) {
+            const arr = [];
+            const maxValue = 999;
+            for (let i = 0; i < size; i++) {
+                arr.push(Math.floor(Math.random() * maxValue) + 1);
+            }
+            return arr;
+        }
+
+        function renderArray(arr, state = {}) {
+            const container = document.getElementById('array');
+            container.innerHTML = '';
+
+            if (!arr.length) {
+                return;
+            }
+
+            const maxValue = Math.max(...arr);
+            const comparing = state.comparing || [];
+            const bucket = state.bucket || [];
+            const rewrite = state.rewrite || [];
+            const sorted = state.sorted || [];
+
+            arr.forEach((value, idx) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar');
+                bar.style.height = (value / maxValue) * 200 + 'px';
+                bar.textContent = value;
+
+                if (sorted.includes(idx)) bar.classList.add('sorted');
+                if (comparing.includes(idx)) bar.classList.add('comparing');
+                if (bucket.includes(idx)) bar.classList.add('bucket');
+                if (rewrite.includes(idx)) bar.classList.add('rewrite');
+
+                container.appendChild(bar);
+            });
+        }
+
+        function renderBuckets(buckets = null, activeBucket = null) {
+            const board = document.getElementById('bucketBoard');
+            board.innerHTML = '';
+
+            const safeBuckets = buckets && buckets.length === 10
+                ? buckets
+                : Array.from({ length: 10 }, () => []);
+
+            for (let digit = 0; digit <= 9; digit++) {
+                const card = document.createElement('div');
+                card.className = 'bucket-card';
+                if (digit === activeBucket) {
+                    card.classList.add('active');
+                }
+
+                const head = document.createElement('div');
+                head.className = 'bucket-head';
+                head.innerHTML = `<span>bucket[${digit}]</span><span class="bucket-count">${safeBuckets[digit].length} 筆</span>`;
+
+                const values = document.createElement('div');
+                values.className = 'bucket-values';
+
+                if (safeBuckets[digit].length === 0) {
+                    const empty = document.createElement('span');
+                    empty.className = 'bucket-empty';
+                    empty.textContent = '（空）';
+                    values.appendChild(empty);
+                } else {
+                    safeBuckets[digit].forEach((value) => {
+                        const pill = document.createElement('span');
+                        pill.className = 'bucket-pill';
+                        pill.textContent = value;
+                        values.appendChild(pill);
+                    });
+                }
+
+                card.appendChild(head);
+                card.appendChild(values);
+                board.appendChild(card);
+            }
+        }
+
+        function updateDigitDisplay(exp = null) {
+            const digitEl = document.getElementById('digitDisplay');
+            if (exp === null) {
+                digitEl.textContent = '目前位數：尚未開始';
+                return;
+            }
+
+            if (exp === 1) digitEl.textContent = '目前位數：個位數';
+            else if (exp === 10) digitEl.textContent = '目前位數：十位數';
+            else if (exp === 100) digitEl.textContent = '目前位數：百位數';
+            else digitEl.textContent = `目前位數：${exp} 位權`;
+        }
+
+        function appendLog(message) {
+            const logEl = document.getElementById('log');
+            logEl.textContent += message + '\n';
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        function updateButtonStates() {
+            document.getElementById('start').disabled = isSorting;
+            document.getElementById('stop').disabled = !isSorting;
+            document.getElementById('nextStep').disabled = !(isSorting && stepModeActive);
+        }
+
+        async function runRadixSortAnimation(arr, delay) {
+            document.getElementById('log').textContent = '';
+            appendLog('開始基數排序（LSD）');
+
+            const maxVal = Math.max(...arr);
+
+            for (let exp = 1; Math.floor(maxVal / exp) > 0; exp *= 10) {
+                if (shouldStop) break;
+
+                updateDigitDisplay(exp);
+                appendLog(`\n處理 ${exp} 位權（digit = (value / ${exp}) % 10）`);
+
+                const buckets = Array.from({ length: 10 }, () => []);
+                renderBuckets(buckets);
+
+                for (let i = 0; i < arr.length; i++) {
+                    if (shouldStop) break;
+
+                    const digit = Math.floor(arr[i] / exp) % 10;
+                    renderArray(arr, { comparing: [i] });
+                    appendLog(`讀取 arr[${i}] = ${arr[i]}，位數值 = ${digit}`);
+                    await sleep(delay);
+
+                    buckets[digit].push(arr[i]);
+                    renderArray(arr, { bucket: [i] });
+                    renderBuckets(buckets, digit);
+                    appendLog(`放入 bucket[${digit}]`);
+                    await sleep(delay);
+                }
+
+                if (shouldStop) break;
+
+                let writeIdx = 0;
+                for (let digit = 0; digit <= 9; digit++) {
+                    for (const value of buckets[digit]) {
+                        arr[writeIdx] = value;
+                        renderArray(arr, { rewrite: [writeIdx] });
+                        renderBuckets(buckets, digit);
+                        appendLog(`由 bucket[${digit}] 回寫 arr[${writeIdx}] = ${value}`);
+                        writeIdx++;
+                        await sleep(delay);
+
+                        if (shouldStop) break;
+                    }
+                    if (shouldStop) break;
+                }
+
+                if (!shouldStop) {
+                    renderArray(arr);
+                    appendLog(`完成 ${exp} 位權排序，陣列：${arr.join(', ')}`);
+                    await sleep(delay);
+                }
+            }
+
+            if (!shouldStop) {
+                renderArray(arr, {
+                    sorted: Array.from({ length: arr.length }, (_, idx) => idx)
+                });
+                updateDigitDisplay(1000);
+                appendLog('\n✓ 排序完成！');
+            } else {
+                appendLog('\n⊗ 排序已停止');
+            }
+
+            isSorting = false;
+            shouldStop = false;
+            stepModeActive = false;
+            updateButtonStates();
+        }
+
+        function buildRadixSteps(sourceArr) {
+            const arr = [...sourceArr];
+            const steps = [];
+            const cloneBuckets = (buckets) => buckets.map((bucket) => [...bucket]);
+
+            function pushStep(message, state = {}, exp = null) {
+                steps.push({
+                    arr: [...arr],
+                    message,
+                    comparing: state.comparing || [],
+                    bucket: state.bucket || [],
+                    rewrite: state.rewrite || [],
+                    sorted: state.sorted || [],
+                    buckets: state.buckets ? cloneBuckets(state.buckets) : null,
+                    activeBucket: state.activeBucket ?? null,
+                    exp
+                });
+            }
+
+            pushStep('開始分解模式：按「下一步」逐步執行。');
+
+            const maxVal = Math.max(...arr);
+            for (let exp = 1; Math.floor(maxVal / exp) > 0; exp *= 10) {
+                pushStep(`\n處理 ${exp} 位權（digit = (value / ${exp}) % 10）`, {}, exp);
+
+                const buckets = Array.from({ length: 10 }, () => []);
+                pushStep('初始化 10 個 bucket。', { buckets }, exp);
+
+                for (let i = 0; i < arr.length; i++) {
+                    const digit = Math.floor(arr[i] / exp) % 10;
+                    pushStep(`讀取 arr[${i}] = ${arr[i]}，位數值 = ${digit}`, { comparing: [i], buckets, activeBucket: digit }, exp);
+                    buckets[digit].push(arr[i]);
+                    pushStep(`放入 bucket[${digit}]`, { bucket: [i], buckets, activeBucket: digit }, exp);
+                }
+
+                let writeIdx = 0;
+                for (let digit = 0; digit <= 9; digit++) {
+                    for (const value of buckets[digit]) {
+                        arr[writeIdx] = value;
+                        pushStep(`由 bucket[${digit}] 回寫 arr[${writeIdx}] = ${value}`, { rewrite: [writeIdx], buckets, activeBucket: digit }, exp);
+                        writeIdx++;
+                    }
+                }
+
+                pushStep(`完成 ${exp} 位權排序，陣列：${arr.join(', ')}`, { buckets }, exp);
+            }
+
+            pushStep('✓ 排序完成！', {
+                sorted: Array.from({ length: arr.length }, (_, idx) => idx)
+            }, 1000);
+
+            return steps;
+        }
+
+        function applyNextRadixStep() {
+            const logEl = document.getElementById('log');
+            if (currentStepIndex >= radixSteps.length) {
+                return;
+            }
+
+            const step = radixSteps[currentStepIndex];
+            renderArray(step.arr, {
+                comparing: step.comparing,
+                bucket: step.bucket,
+                rewrite: step.rewrite,
+                sorted: step.sorted
+            });
+            renderBuckets(step.buckets, step.activeBucket);
+
+            if (step.exp === 1000) {
+                updateDigitDisplay(1000);
+            } else if (step.exp !== null) {
+                updateDigitDisplay(step.exp);
+            }
+
+            logEl.textContent += `${step.message}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+            currentStepIndex++;
+
+            if (currentStepIndex >= radixSteps.length) {
+                isSorting = false;
+                stepModeActive = false;
+                updateButtonStates();
+            }
+        }
+
+        document.getElementById('speed').addEventListener('change', (e) => {
+            const speed = parseInt(e.target.value, 10);
+            let label = '';
+            if (speed <= 250) label = '慢速';
+            else if (speed <= 500) label = '中速';
+            else label = '快速';
+            document.getElementById('speedDisplay').textContent = label;
+        });
+
+        document.getElementById('start').addEventListener('click', () => {
+            if (isSorting) return;
+
+            isSorting = true;
+            shouldStop = false;
+            stepModeActive = document.getElementById('stepMode').checked;
+            updateButtonStates();
+
+            const size = parseInt(document.getElementById('arraySize').value, 10) || 10;
+            const speed = parseInt(document.getElementById('speed').value, 10);
+            currentArr = generateArray(size);
+            renderArray(currentArr);
+            renderBuckets();
+            updateDigitDisplay(null);
+
+            if (stepModeActive) {
+                radixSteps = buildRadixSteps(currentArr);
+                currentStepIndex = 0;
+                document.getElementById('log').textContent = '';
+                applyNextRadixStep();
+                updateButtonStates();
+                return;
+            }
+
+            runRadixSortAnimation(currentArr, 850 - speed);
+        });
+
+        document.getElementById('stop').addEventListener('click', () => {
+            shouldStop = true;
+            isSorting = false;
+            stepModeActive = false;
+            updateButtonStates();
+        });
+
+        document.getElementById('nextStep').addEventListener('click', () => {
+            if (!isSorting || !stepModeActive) return;
+            applyNextRadixStep();
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            shouldStop = true;
+            isSorting = false;
+            stepModeActive = false;
+            radixSteps = [];
+            currentStepIndex = 0;
+            updateButtonStates();
+
+            document.getElementById('log').textContent = '';
+            updateDigitDisplay(null);
+            renderBuckets();
+
+            const size = parseInt(document.getElementById('arraySize').value, 10) || 10;
+            currentArr = generateArray(size);
+            renderArray(currentArr);
+        });
+
+        window.addEventListener('load', () => {
+            const size = parseInt(document.getElementById('arraySize').value, 10) || 10;
+            currentArr = generateArray(size);
+            renderArray(currentArr);
+            renderBuckets();
+            updateDigitDisplay(null);
+        });
+    </script>
+</body>
+</html>

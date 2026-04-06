@@ -49,6 +49,15 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        .array-section {
+            margin-top: 20px;
+        }
+        .array-label {
+            margin: 0 0 8px;
+            text-align: center;
+            font-weight: bold;
+            color: #334155;
+        }
         .bar {
             width: 30px;
             margin-right: 2px;
@@ -63,6 +72,13 @@
         .bar.right-part { background-color: #f97316; }
         .bar.comparing { background-color: #f59e0b; }
         .bar.merged { background-color: #22c55e; }
+        .bar.reg-bar { background-color: #64748b; }
+        .bar.reg-empty {
+            background-color: #cbd5e1;
+            color: #334155;
+            min-height: 24px;
+            line-height: 24px;
+        }
         button {
             padding: 10px 20px;
             font-size: 16px;
@@ -249,7 +265,14 @@
             </div>
         </div>
 
-        <div class="array-container" id="array"></div>
+        <div class="array-section">
+            <p class="array-label">原陣列 a[]</p>
+            <div class="array-container" id="array"></div>
+        </div>
+        <div class="array-section">
+            <p class="array-label">暫存陣列 reg[]（目前合併結果）</p>
+            <div class="array-container" id="regArray"></div>
+        </div>
         <div id="log"></div>
 
         <section class="code-panel">
@@ -257,58 +280,49 @@
             <p>合併排序使用分治法：先把陣列切小，再把排序好的子陣列合併回去。</p>
             <ul>
                 <li>遞迴把區間切成左右兩半，直到只剩一個元素。</li>
-                <li>合併時同時比較左右子陣列前端元素，把較小者放回原陣列。</li>
+                <li>合併時用一個 reg[] 暫存較小元素，最後把該區間複製回原陣列。</li>
                 <li>時間複雜度約為 O(n log n)，在大量資料時通常比 O(n²) 排序更有效率。</li>
             </ul>
             <div class="code-header">
                 <span class="code-lang">C++</span>
             </div>
             <pre class="code-block"><code>#include &lt;iostream&gt;
-#include &lt;vector&gt;
 using namespace std;
 
-void merge(vector&lt;int&gt;&amp; arr, int left, int mid, int right) {
-    vector&lt;int&gt; leftPart(arr.begin() + left, arr.begin() + mid + 1);
-    vector&lt;int&gt; rightPart(arr.begin() + mid + 1, arr.begin() + right + 1);
+void merge_sort_recursive(int a[], int reg[], int start, int end) {
+    if (start &gt;= end) return;
 
-    int i = 0, j = 0, k = left;
+    int mid = (start + end) / 2;
+    int start1 = start, end1 = mid;
+    int start2 = mid + 1, end2 = end;
 
-    while (i &lt; static_cast&lt;int&gt;(leftPart.size()) &amp;&amp; j &lt; static_cast&lt;int&gt;(rightPart.size())) {
-        if (leftPart[i] &lt;= rightPart[j]) {
-            arr[k++] = leftPart[i++];
-        } else {
-            arr[k++] = rightPart[j++];
-        }
+    merge_sort_recursive(a, reg, start1, end1);
+    merge_sort_recursive(a, reg, start2, end2);
+
+    int k = start;
+    while (start1 &lt;= end1 &amp;&amp; start2 &lt;= end2) {
+        reg[k++] = (a[start1] &lt;= a[start2]) ? a[start1++] : a[start2++];
     }
 
-    while (i &lt; static_cast&lt;int&gt;(leftPart.size())) {
-        arr[k++] = leftPart[i++];
-    }
+    while (start1 &lt;= end1) reg[k++] = a[start1++];
+    while (start2 &lt;= end2) reg[k++] = a[start2++];
 
-    while (j &lt; static_cast&lt;int&gt;(rightPart.size())) {
-        arr[k++] = rightPart[j++];
+    // 把暫存區 reg 的結果寫回原陣列 a
+    for (int i = start; i &lt;= end; i++) {
+        a[i] = reg[i];
     }
-}
-
-void mergeSort(vector&lt;int&gt;&amp; arr, int left, int right) {
-    if (left &gt;= right) {
-        return;
-    }
-
-    int mid = left + (right - left) / 2;
-    mergeSort(arr, left, mid);
-    mergeSort(arr, mid + 1, right);
-    merge(arr, left, mid, right);
 }
 
 int main() {
-    vector&lt;int&gt; data = {7, 2, 9, 1, 5, 3};
+    int data[] = {7, 2, 9, 1, 5, 3};
+    int reg[6] = {0};
+    int n = 6;
 
-    mergeSort(data, 0, static_cast&lt;int&gt;(data.size()) - 1);
+    merge_sort_recursive(data, reg, 0, n - 1);
 
     cout &lt;&lt; "排序結果: ";
-    for (int x : data) {
-        cout &lt;&lt; x &lt;&lt; " ";
+    for (int i = 0; i &lt; n; i++) {
+        cout &lt;&lt; data[i] &lt;&lt; " ";
     }
     cout &lt;&lt; endl;
 
@@ -359,12 +373,47 @@ int main() {
             });
         }
 
+        function renderRegArray(regArr, leftIndices = [], rightIndices = [], comparingIndices = [], mergedIndices = []) {
+            const container = document.getElementById('regArray');
+            container.innerHTML = '';
+            const values = regArr.filter(v => v !== null);
+            const maxValue = values.length ? Math.max(...values) : 1;
+
+            regArr.forEach((value, idx) => {
+                const bar = document.createElement('div');
+                bar.classList.add('bar', 'reg-bar');
+
+                if (value === null) {
+                    bar.classList.add('reg-empty');
+                    bar.style.height = '24px';
+                    bar.textContent = '-';
+                } else {
+                    bar.style.height = (value / maxValue) * 200 + 'px';
+                    bar.textContent = value;
+                }
+
+                if (leftIndices.includes(idx)) bar.classList.add('left-part');
+                if (rightIndices.includes(idx)) bar.classList.add('right-part');
+                if (comparingIndices.includes(idx)) bar.classList.add('comparing');
+                if (mergedIndices.includes(idx)) bar.classList.add('merged');
+
+                container.appendChild(bar);
+            });
+        }
+
+        function renderBothArrays(step) {
+            renderArray(step.arr, step.leftIndices, step.rightIndices, step.comparing, step.merged);
+            renderRegArray(step.reg, step.leftIndices, step.rightIndices, step.comparing, step.merged);
+        }
+
         function buildMergeSortSteps(sourceArr) {
             const arr = [...sourceArr];
+            const reg = Array(arr.length).fill(null);
             const steps = [];
 
             steps.push({
                 arr: [...arr],
+                reg: [...reg],
                 leftIndices: [],
                 rightIndices: [],
                 comparing: [],
@@ -376,6 +425,7 @@ int main() {
                 if (left >= right) {
                     steps.push({
                         arr: [...arr],
+                        reg: [...reg],
                         leftIndices: [left],
                         rightIndices: [],
                         comparing: [],
@@ -389,6 +439,7 @@ int main() {
 
                 steps.push({
                     arr: [...arr],
+                    reg: [...reg],
                     leftIndices: buildRange(left, mid),
                     rightIndices: buildRange(mid + 1, right),
                     comparing: [],
@@ -406,8 +457,13 @@ int main() {
                 let k = left;
                 const mergedIndices = [];
 
+                for (let p = left; p <= right; p++) {
+                    reg[p] = null;
+                }
+
                 steps.push({
                     arr: [...arr],
+                    reg: [...reg],
                     leftIndices: buildRange(left, mid),
                     rightIndices: buildRange(mid + 1, right),
                     comparing: [],
@@ -423,6 +479,7 @@ int main() {
 
                     steps.push({
                         arr: [...arr],
+                        reg: [...reg],
                         leftIndices: buildRange(left, mid),
                         rightIndices: buildRange(mid + 1, right),
                         comparing: [leftIndex, rightIndex],
@@ -431,27 +488,29 @@ int main() {
                     });
 
                     if (leftVal <= rightVal) {
-                        arr[k] = leftVal;
+                        reg[k] = leftVal;
                         mergedIndices.push(k);
                         steps.push({
                             arr: [...arr],
+                            reg: [...reg],
                             leftIndices: buildRange(left, mid),
                             rightIndices: buildRange(mid + 1, right),
                             comparing: [],
                             merged: [...mergedIndices],
-                            message: `放入 ${leftVal} 到位置 ${k}`
+                            message: `reg[${k}] 放入左值 ${leftVal}`
                         });
                         i++;
                     } else {
-                        arr[k] = rightVal;
+                        reg[k] = rightVal;
                         mergedIndices.push(k);
                         steps.push({
                             arr: [...arr],
+                            reg: [...reg],
                             leftIndices: buildRange(left, mid),
                             rightIndices: buildRange(mid + 1, right),
                             comparing: [],
                             merged: [...mergedIndices],
-                            message: `放入 ${rightVal} 到位置 ${k}`
+                            message: `reg[${k}] 放入右值 ${rightVal}`
                         });
                         j++;
                     }
@@ -459,37 +518,54 @@ int main() {
                 }
 
                 while (i < leftPart.length) {
-                    arr[k] = leftPart[i];
+                    reg[k] = leftPart[i];
                     mergedIndices.push(k);
                     steps.push({
                         arr: [...arr],
+                        reg: [...reg],
                         leftIndices: buildRange(left, mid),
                         rightIndices: buildRange(mid + 1, right),
                         comparing: [],
                         merged: [...mergedIndices],
-                        message: `右半部已用完，補上左值 ${leftPart[i]} 到位置 ${k}`
+                        message: `右半部已用完，reg[${k}] 補上左值 ${leftPart[i]}`
                     });
                     i++;
                     k++;
                 }
 
                 while (j < rightPart.length) {
-                    arr[k] = rightPart[j];
+                    reg[k] = rightPart[j];
                     mergedIndices.push(k);
                     steps.push({
                         arr: [...arr],
+                        reg: [...reg],
                         leftIndices: buildRange(left, mid),
                         rightIndices: buildRange(mid + 1, right),
                         comparing: [],
                         merged: [...mergedIndices],
-                        message: `左半部已用完，補上右值 ${rightPart[j]} 到位置 ${k}`
+                        message: `左半部已用完，reg[${k}] 補上右值 ${rightPart[j]}`
                     });
                     j++;
                     k++;
                 }
 
+                for (let p = left; p <= right; p++) {
+                    arr[p] = reg[p];
+                }
+
                 steps.push({
                     arr: [...arr],
+                    reg: [...reg],
+                    leftIndices: buildRange(left, mid),
+                    rightIndices: buildRange(mid + 1, right),
+                    comparing: [],
+                    merged: buildRange(left, right),
+                    message: `把 reg[${left}..${right}] 複製回 a[${left}..${right}]`
+                });
+
+                steps.push({
+                    arr: [...arr],
+                    reg: [...reg],
                     leftIndices: [],
                     rightIndices: [],
                     comparing: [],
@@ -502,6 +578,7 @@ int main() {
 
             steps.push({
                 arr: [...arr],
+                reg: [...reg],
                 leftIndices: [],
                 rightIndices: [],
                 comparing: [],
@@ -521,7 +598,7 @@ int main() {
                 }
 
                 const step = mergeSteps[currentStepIndex];
-                renderArray(step.arr, step.leftIndices, step.rightIndices, step.comparing, step.merged);
+                renderBothArrays(step);
                 logEl.textContent += `${step.message}\n`;
                 currentStepIndex++;
                 await sleep(delay);
@@ -541,7 +618,7 @@ int main() {
             }
 
             const step = mergeSteps[currentStepIndex];
-            renderArray(step.arr, step.leftIndices, step.rightIndices, step.comparing, step.merged);
+            renderBothArrays(step);
             logEl.textContent += `${step.message}\n`;
             currentStepIndex++;
 
@@ -565,9 +642,9 @@ int main() {
         document.getElementById('speed').addEventListener('change', (e) => {
             const speed = parseInt(e.target.value);
             let label = '';
-            if (speed <= 250) label = '快速';
+            if (speed <= 250) label = '慢速';
             else if (speed <= 500) label = '中速';
-            else label = '慢速';
+            else label = '快速';
             document.getElementById('speedDisplay').textContent = label;
         });
 
@@ -620,12 +697,14 @@ int main() {
             const size = parseInt(document.getElementById('arraySize').value) || 12;
             currentArr = generateArray(size);
             renderArray(currentArr);
+            renderRegArray(Array(currentArr.length).fill(null));
         });
 
         window.addEventListener('load', () => {
             const size = parseInt(document.getElementById('arraySize').value) || 12;
             currentArr = generateArray(size);
             renderArray(currentArr);
+            renderRegArray(Array(currentArr.length).fill(null));
         });
     </script>
 </body>

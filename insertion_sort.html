@@ -122,6 +122,32 @@
             margin-right: 6px;
             vertical-align: middle;
         }
+        .picked-indicator {
+            margin-top: 14px;
+            padding: 10px 14px;
+            border: 1px solid #dbeafe;
+            background: linear-gradient(90deg, #eff6ff 0%, #f8fbff 100%);
+            border-radius: 8px;
+            color: #1e3a8a;
+            font-weight: 600;
+            text-align: center;
+        }
+        .picked-indicator[hidden] {
+            display: none;
+        }
+        .picked-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            background-color: #1e40af;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            line-height: 1;
+        }
         .code-panel {
             margin-top: 20px;
             background-color: white;
@@ -251,6 +277,10 @@
     </div>
 
     <div class="array-container" id="array"></div>
+    <div class="picked-indicator" id="pickedIndicator" hidden>
+        <span class="picked-icon">K</span>
+        <span id="pickedText">目前取出元素（key）：-</span>
+    </div>
     <div id="log"></div>
 
     <section class="code-panel">
@@ -337,6 +367,20 @@ int main() {
             });
         }
 
+        function updatePickedElement(visible, keyValue = null, sourceIdx = -1) {
+            const indicator = document.getElementById('pickedIndicator');
+            const text = document.getElementById('pickedText');
+
+            if (!visible || keyValue === null) {
+                indicator.hidden = true;
+                text.textContent = '目前取出元素（key）：-';
+                return;
+            }
+
+            indicator.hidden = false;
+            text.textContent = `目前取出元素（key）：${keyValue}（原位置 i = ${sourceIdx}）`;
+        }
+
         async function insertionSort(arr, delay) {
             const n = arr.length;
             const logEl = document.getElementById('log');
@@ -356,6 +400,7 @@ int main() {
                 const key = arr[i];
                 logEl.textContent += `---- 第 ${i} 輪 ----\n`;
                 logEl.textContent += `取出第 ${i} 個元素: ${key}\n`;
+                updatePickedElement(true, key, i);
                 renderArray(arr, sortedIndices, i);
                 await sleep(delay);
 
@@ -386,6 +431,7 @@ int main() {
                     arr[j + 1] = key;
                     sortedIndices.push(i);
                     logEl.textContent += `將 ${key} 插入到位置 ${j + 1}\n\n`;
+                    updatePickedElement(false);
                     renderArray(arr, sortedIndices);
                     await sleep(delay);
                 }
@@ -397,6 +443,7 @@ int main() {
                 renderArray(arr, allIndices);
                 logEl.textContent += '✓ 排序完成！';
             }
+            updatePickedElement(false);
             isSorting = false;
             shouldStop = false;
             updateButtonStates();
@@ -413,6 +460,8 @@ int main() {
                 currentIdx: -1,
                 comparingIdx: -1,
                 shiftingIndices: [],
+                pickedKey: null,
+                keySourceIdx: -1,
                 message: '開始分解模式：按「下一步」逐步執行。'
             });
 
@@ -422,6 +471,8 @@ int main() {
                 currentIdx: -1,
                 comparingIdx: -1,
                 shiftingIndices: [],
+                pickedKey: null,
+                keySourceIdx: -1,
                 message: '第一個元素視為已排序。'
             });
 
@@ -433,6 +484,8 @@ int main() {
                     currentIdx: i,
                     comparingIdx: -1,
                     shiftingIndices: [],
+                    pickedKey: key,
+                    keySourceIdx: i,
                     message: `---- 第 ${i} 輪 ---- 取出第 ${i} 個元素: ${key}`
                 });
 
@@ -444,6 +497,8 @@ int main() {
                         currentIdx: i,
                         comparingIdx: j,
                         shiftingIndices: [],
+                        pickedKey: key,
+                        keySourceIdx: i,
                         message: `比較 arr[${j}] = ${arr[j]} 和 ${key}`
                     });
 
@@ -454,6 +509,8 @@ int main() {
                         currentIdx: i,
                         comparingIdx: -1,
                         shiftingIndices: [j + 1],
+                        pickedKey: key,
+                        keySourceIdx: i,
                         message: `將 ${arr[j + 1]} 右移到位置 ${j + 1}`
                     });
 
@@ -467,6 +524,8 @@ int main() {
                     currentIdx: -1,
                     comparingIdx: -1,
                     shiftingIndices: [],
+                    pickedKey: null,
+                    keySourceIdx: -1,
                     message: `將 ${key} 插入到位置 ${j + 1}`
                 });
             }
@@ -477,6 +536,8 @@ int main() {
                 currentIdx: -1,
                 comparingIdx: -1,
                 shiftingIndices: [],
+                pickedKey: null,
+                keySourceIdx: -1,
                 message: '✓ 排序完成！'
             });
 
@@ -492,6 +553,7 @@ int main() {
 
             const step = insertionSteps[currentStepIndex];
             renderArray(step.arr, step.sortedIndices, step.currentIdx, step.comparingIdx, step.shiftingIndices);
+            updatePickedElement(step.pickedKey !== null, step.pickedKey, step.keySourceIdx);
             logEl.textContent += `${step.message}\n`;
             currentStepIndex++;
 
@@ -516,9 +578,9 @@ int main() {
         document.getElementById('speed').addEventListener('change', (e) => {
             const speed = parseInt(e.target.value);
             let label = '';
-            if (speed <= 250) label = '快速';
+            if (speed <= 250) label = '慢速';
             else if (speed <= 500) label = '中速';
-            else label = '慢速';
+            else label = '快速';
             document.getElementById('speedDisplay').textContent = label;
         });
 
@@ -533,6 +595,7 @@ int main() {
             const speed = parseInt(document.getElementById('speed').value);
             currentArr = generateArray(size);
             renderArray(currentArr);
+            updatePickedElement(false);
 
             if (stepModeActive) {
                 insertionSteps = buildInsertionSteps(currentArr);
@@ -569,6 +632,7 @@ int main() {
             const size = parseInt(document.getElementById('arraySize').value) || 10;
             currentArr = generateArray(size);
             renderArray(currentArr);
+            updatePickedElement(false);
         });
 
         // 初始化顯示
@@ -576,6 +640,7 @@ int main() {
             const size = parseInt(document.getElementById('arraySize').value) || 10;
             currentArr = generateArray(size);
             renderArray(currentArr);
+            updatePickedElement(false);
         });
     </script>
 </body>

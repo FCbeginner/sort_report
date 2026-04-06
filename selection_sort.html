@@ -551,9 +551,9 @@ int main() {
         document.getElementById('speed').addEventListener('change', (e) => {
             const speed = parseInt(e.target.value);
             let label = '';
-            if (speed <= 250) label = '快速';
+            if (speed <= 250) label = '慢速';
             else if (speed <= 500) label = '中速';
-            else label = '慢速';
+            else label = '快速';
             document.getElementById('speedDisplay').textContent = label;
         });
 
